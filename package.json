@@ -1,0 +1,17 @@
+{
+  "name": "raylib",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "dependencies": {
+    "nodemon": "^3.1.0",
+    "prettier": "^3.2.5",
+    "raylib": "^0.14.0"
+  },
+  "scripts": {
+    "start": "nodemon src/main.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
