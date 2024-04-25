@@ -7,6 +7,7 @@ import {
   startingHeight,
   startingWidth,
 } from "./static.js";
+import { loadTextures } from "./textures.js";
 
 let squarePositions = [[], [], [], [], [], [], [], [], [], []];
 let gameGrid = [[], [], [], [], [], [], [], [], [], []];
@@ -16,6 +17,7 @@ let gameState = "Started";
 r.InitWindow(screenWidth, screenHeight, "");
 r.SetTargetFPS(244);
 generateGameGrid();
+const { squareTexture, clickedTexture, onMouseTexture } = loadTextures(r);
 
 let count = 0;
 while (!r.WindowShouldClose()) {
@@ -23,8 +25,16 @@ while (!r.WindowShouldClose()) {
   else count = 1;
   r.BeginDrawing();
   if (gameState === "Lost") {
-    r.DrawText("You lost baby bro", (screenWidth - 360) / 2 , screenHeight / 3, 45, r.BLACK);
+    r.DrawText(
+      "You lost baby bro",
+      (screenWidth - 360) / 2,
+      screenHeight / 3,
+      45,
+      r.BLACK
+    );
   } else {
+    r.DrawRectangle(350, 20, 550, 545, r.BLACK);
+    r.DrawRectangle(375, 35, 510, 510, r.GRAY);
     r.ClearBackground(r.LIGHTGRAY);
     showGrid(10);
     detectSquare();
@@ -50,15 +60,35 @@ function showGrid(gridSize) {
 
       if (currentValue.clicked) {
         if (currentValue.type === "Number") {
-          r.DrawRectangle(
-            squarePosition.x,
-            squarePosition.y,
-            squareSize,
-            squareSize,
-            isCurrent(i, j) ? r.ORANGE : r.GREEN,
-          );
+          isCurrent(i, j)
+            ? r.DrawTexture(
+                onMouseTexture,
+                squarePosition.x,
+                squarePosition.y,
+                r.WHITE
+              )
+            : r.DrawTexture(
+                clickedTexture,
+                squarePosition.x,
+                squarePosition.y,
+                r.WHITE
+              );
+
+          // r.DrawRectangle(
+          //   squarePosition.x,
+          //   squarePosition.y,
+          //   squareSize,
+          //   squareSize,
+          //   isCurrent(i, j) ? r.ORANGE : r.GREEN
+          // );
           if (currentValue.value) {
-            r.DrawText(currentValue.value.toString(), squarePosition.x + 19, squarePosition.y + 17, 12, r.BLACK);
+            r.DrawText(
+              currentValue.value.toString(),
+              squarePosition.x + 19,
+              squarePosition.y + 17,
+              12,
+              r.BLACK
+            );
           }
         } else {
           r.DrawRectangle(
@@ -66,17 +96,27 @@ function showGrid(gridSize) {
             squarePosition.y,
             squareSize,
             squareSize,
-            isCurrent(i, j) ? r.ORANGE : r.RED,
+            isCurrent(i, j) ? r.ORANGE : r.RED
           );
         }
       } else {
-        r.DrawRectangle(
-          squarePosition.x,
-          squarePosition.y,
-          squareSize,
-          squareSize,
-          isCurrent(i, j) ? r.ORANGE : r.GRAY,
-        );
+        // r.BeginDrawing()
+        // r.ClearBackground(r.RAYWHITE)
+        isCurrent(i, j)
+          ? r.DrawTexture(
+              onMouseTexture,
+              squarePosition.x,
+              squarePosition.y,
+              r.WHITE
+            )
+          : r.DrawTexture(
+              squareTexture,
+              squarePosition.x,
+              squarePosition.y,
+              r.WHITE
+            );
+
+        // r.EndDrawing()
       }
 
       if (startup) {
@@ -113,7 +153,7 @@ function generateGameGrid() {
     for (let j = 0; j < gameGrid.length; j++) {
       const randomNumber = Math.round(Math.random() / 1.5);
       if (randomNumber) gameGrid[i][j] = { type: "Mine", clicked: false };
-      else gameGrid[i][j] = { type: "Number", value: 0, clicked: false }
+      else gameGrid[i][j] = { type: "Number", value: 0, clicked: false };
     }
   }
   for (let i = 0; i < gameGrid.length; i++) {
@@ -132,12 +172,12 @@ function generateGameGrid() {
 
           leftBottom: gameGrid[i + 1]?.[j - 1],
           rightBottom: gameGrid[i + 1]?.[j + 1],
-        }
+        };
         let count = 0;
 
         Object.values(neighbors).forEach((neighbor) => {
-          return neighbor?.type === "Mine" && count++
-        })
+          return neighbor?.type === "Mine" && count++;
+        });
 
         gameGrid[i][j] = { type: "Number", value: count, clicked: false };
       }
@@ -146,10 +186,10 @@ function generateGameGrid() {
 }
 
 function detectClick() {
-  const { x, y} = selectedSquare;
+  const { x, y } = selectedSquare;
   if (r.IsMouseButtonPressed(r.MOUSE_BUTTON_LEFT) && x !== null && y !== null) {
     const currentValue = gameGrid[y][x];
-    currentValue.clicked = true
+    currentValue.clicked = true;
 
     if (currentValue.type === "Mine") {
       gameState = "Lost";
